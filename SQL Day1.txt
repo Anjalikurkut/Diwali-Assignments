@@ -1,0 +1,80 @@
+1. Display top 5 highest salary earners in each dept
+==>
+CREATE TABLE Employee (
+    EmpID INT PRIMARY KEY,
+    EmpName VARCHAR(50),
+    DeptID INT,
+    Salary DECIMAL(10,2),
+    JoiningDate DATE
+);
+
+SELECT EmpID, EmpName, DeptID, Salary
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY DeptID ORDER BY Salary DESC) AS rn
+    FROM Employee
+) AS T
+WHERE rn <= 5
+ORDER BY DeptID, Salary DESC;
+
+
+2. Write a stored function getWorkingDays which accepts joining data and returns the no of working days
+==>
+DELIMITER $$
+
+CREATE FUNCTION getWorkingDays(join_date DATE)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE total_days INT;
+    DECLARE num_weeks INT;
+    DECLARE working_days INT;
+
+    SET total_days = DATEDIFF(CURDATE(), join_date) + 1; -- include joining day
+    SET num_weeks = total_days DIV 7;
+    SET working_days = total_days - (num_weeks * 2); -- subtract weekends
+
+    RETURN working_days;
+END$$
+
+DELIMITER ;
+
+
+3. Write a stored procedure which updates the salary of a given emp based on no of working days. Give differential salary rise based on no of working days.
+==>
+DELIMITER $$
+
+CREATE PROCEDURE UpdateSalary(IN p_EmpID INT)
+BEGIN
+    DECLARE days INT;
+    DECLARE newSalary DECIMAL(10,2);
+    DECLARE currentSalary DECIMAL(10,2);
+
+    -- Get current salary
+    SELECT Salary INTO currentSalary FROM Employee WHERE EmpID = p_EmpID;
+
+    -- Calculate working days
+    SELECT getWorkingDays(JoiningDate) INTO days
+    FROM Employee
+    WHERE EmpID = p_EmpID;
+
+    -- Give differential rise based on working days
+    IF days >= 365 THEN
+        SET newSalary = currentSalary * 1.10; -- 10% increase
+    ELSEIF days >= 180 THEN
+        SET newSalary = currentSalary * 1.05; -- 5% increase
+    ELSE
+        SET newSalary = currentSalary; -- no increase
+    END IF;
+
+    -- Update salary
+    UPDATE Employee
+    SET Salary = newSalary
+    WHERE EmpID = p_EmpID;
+
+END$$
+
+DELIMITER ;
+
+
+

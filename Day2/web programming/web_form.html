@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Registration Form</title>
+  <style>
+    .error { color: red; font-size: 0.9em; margin-left: 8px; }
+    label { display:block; margin-top:8px; }
+    input { padding:6px; width:250px; }
+  </style>
+</head>
+<body>
+  <h2>Register</h2>
+  <form id="regForm" novalidate>
+    <label>First name: <input type="text" id="first" required> <span id="err-first" class="error"></span></label>
+    <label>Last name: <input type="text" id="last" required> <span id="err-last" class="error"></span></label>
+    <label>Email: <input type="email" id="email" required> <span id="err-email" class="error"></span></label>
+    <label>User ID: <input type="text" id="userid" required> <span id="err-userid" class="error"></span></label>
+    <label>Password: <input type="password" id="pwd" required> <span id="err-pwd" class="error"></span></label>
+    <label>Confirm Password: <input type="password" id="cpwd" required> <span id="err-cpwd" class="error"></span></label>
+    <br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('regForm');
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      // clear errors
+      document.querySelectorAll('.error').forEach(el => el.textContent = '');
+      let valid = true;
+
+      const first = document.getElementById('first').value.trim();
+      const last = document.getElementById('last').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const userid = document.getElementById('userid').value.trim();
+      const pwd = document.getElementById('pwd').value;
+      const cpwd = document.getElementById('cpwd').value;
+
+      if (!first) { document.getElementById('err-first').textContent = 'First name required'; valid = false; }
+      if (!last)  { document.getElementById('err-last').textContent = 'Last name required'; valid = false; }
+      if (!email) { document.getElementById('err-email').textContent = 'Email required'; valid = false; }
+      else if (!emailRe.test(email)) { document.getElementById('err-email').textContent = 'Invalid email'; valid = false; }
+      if (!userid) { document.getElementById('err-userid').textContent = 'User ID required'; valid = false; }
+      if (!pwd) { document.getElementById('err-pwd').textContent = 'Password required'; valid = false; }
+      if (!cpwd) { document.getElementById('err-cpwd').textContent = 'Confirm password required'; valid = false; }
+      if (pwd && cpwd && pwd !== cpwd) {
+        document.getElementById('err-cpwd').textContent = 'Passwords do not match'; valid = false;
+      }
+
+      if (valid) {
+        alert('Form is valid — submit to server (example).');
+        form.reset();
+      }
+    });
+  </script>
+</body>
+</html>
